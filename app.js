@@ -83,13 +83,12 @@ function buildfont(fontcachecode, options, callback) {
           .use(Fontmin.glyph({ 
               text: characters,
               hinting: false         // keep ttf hint info (fpgm, prep, cvt). default = true
-          })
+          }))
           .use(Fontmin.ttf2eot())     // eot 转换插件
           .use(Fontmin.ttf2svg())     // svg 转换插件
           .use(Fontmin.ttf2woff({
               deflate: true           // deflate woff. default = false
-          }))    // woff 转换插件
-          );
+          }));    // woff 转换插件
       
       fontmin.run(function (err, files) {
           if (err) {
