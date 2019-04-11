@@ -72,6 +72,8 @@ const mimetypes = {
   '.mnd': 'audio/x-musicnet-download',
   '.mocha': 'application/x-javascript',
   '.mp1': 'audio/mp1',
+  '.woff': 'application/x-font-woff',
+  '.eot': 'application/vnd.ms-fontobject',
   '.mp2v': 'video/mpeg',
   '.mp4': 'video/mpeg4',
   '.mpd': 'application/vnd.ms-project',
