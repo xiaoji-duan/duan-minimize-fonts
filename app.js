@@ -35,12 +35,20 @@ function statics(ctx) {
           buildfont(fontcachecode, {host: 'www.guobaa.com', path: uri, protocol: originurl.protocol, method: ctx.request.method}, {
             success: function() {
               let content = fs.readFileSync(file);
-              ctx.response.writeHead(200, {'Content-Type': types.getContentType(filepath)});
+              ctx.response.writeHead(200, {
+                'Content-Type': types.getContentType(filepath),
+                'Access-Control-Allow-Origin','*',
+                'Access-Control-Allow-Methods','DELETE,PUT,POST,GET,OPTIONS',
+                'Access-Control-Allow-Headers','content-type'
+              });
               ctx.response.write(content);
               ctx.response.end();
             },
             error: function() {
-              ctx.response.writeHead(404, {'Content-Type': 'text/plain'});
+              ctx.response.writeHead(404, {'Content-Type': 'text/plain',
+        'Access-Control-Allow-Origin','*',
+        'Access-Control-Allow-Methods','DELETE,PUT,POST,GET,OPTIONS',
+        'Access-Control-Allow-Headers','content-type'});
               ctx.response.write('file ' + file + ' not exist.');
               ctx.response.end();
             }
@@ -50,7 +58,12 @@ function statics(ctx) {
 
     } else {
       let content = fs.readFileSync(file);
-      ctx.response.writeHead(200, {'Content-Type': types.getContentType(filepath)});
+      ctx.response.writeHead(200, {
+        'Content-Type': types.getContentType(filepath),
+        'Access-Control-Allow-Origin','*',
+        'Access-Control-Allow-Methods','DELETE,PUT,POST,GET,OPTIONS',
+        'Access-Control-Allow-Headers','content-type'
+      });
       ctx.response.write(content);
       ctx.response.end();
     }
@@ -132,7 +145,12 @@ function minfonts(ctx) {
   
   buildfont(fontcachecode, {host: 'www.guobaa.com', path: uri, protocol: originurl.protocol, method: ctx.request.method});
 
-  ctx.response.writeHead(200, {'Content-Type': 'application/json'});
+  ctx.response.writeHead(200, {
+    'Content-Type': 'application/json',
+    'Access-Control-Allow-Origin','*',
+    'Access-Control-Allow-Methods','DELETE,PUT,POST,GET,OPTIONS',
+    'Access-Control-Allow-Headers','content-type'
+    });
   ctx.response.end('{"compressed-fonts":"' + fontcachecode + '"}');
 }
 // 自定义功能代码
