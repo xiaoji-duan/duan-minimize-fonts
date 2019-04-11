@@ -13,12 +13,48 @@ function statics(ctx) {
   let path = ctx.path();
   
   let filepath = path.slice(4);
-  console.log('filepath:' + filepath);
+  let file = '.' + filepath;
   
-  let file = fs.readFileSync('.' + filepath);
-  ctx.response.writeHead(200, {'Content-Type': types.getContentType(filepath)});
-  ctx.response.write(file);
-  ctx.response.end();
+  fs.access(file, fs.constants.F_OK | fs.constants.R_OK, (err) => {
+    if (err) {
+      console.log(
+        `${file} ${err.code === 'ENOENT' ? 'does not exist' : 'is read-only'}`);
+          console.log("url: " + ctx.request.path);
+
+      let originurl = url.parse(ctx.request.url);
+      let regex = '\\/([^\\/\\.]+)\\/[^\\/]+$';
+      let matched = path.match(regex);
+
+      let probfontcachecode = null;
+      if (matched) probfontcachecode = matched[1]
+      if (probfontcachecode && URLSafeBase64.validate(probfontcachecode)) {
+        let uri = URLSafeBase64.decode(probfontcachecode).toString();
+        let fontcachecode = probfontcachecode;
+
+        if (uri !== undefined && uri.startsWith('/')) {
+          buildfont(fontcachecode, {host: 'www.guobaa.com', path: uri, protocol: originurl.protocol, method: ctx.request.method}, {
+            success: function() {
+              let content = fs.readFileSync(file);
+              ctx.response.writeHead(200, {'Content-Type': types.getContentType(filepath)});
+              ctx.response.write(content);
+              ctx.response.end();
+            },
+            error: function() {
+              ctx.response.writeHead(404, {'Content-Type': 'text/plain'});
+              ctx.response.write('file ' + file + ' not exist.');
+              ctx.response.end();
+            }
+          });
+        }
+      }
+
+    } else {
+      let content = fs.readFileSync(file);
+      ctx.response.writeHead(200, {'Content-Type': types.getContentType(filepath)});
+      ctx.response.write(content);
+      ctx.response.end();
+    }
+  });
 }
 
 // 自定义功能代码
@@ -26,6 +62,57 @@ config.routes.push({route: '/', handle: index});
 config.routes.push({routeRegex: '\\/mif\\/static\\/.+\\..+', handle: statics});
 config.routes.push({routeRegex: '\\/mif\\/[a-zA-Z]{3}\\/.*', handle: minfonts});
 config.routes.push({routeRegex: '\\/.+', handle: index});
+
+function buildfont(fontcachecode, options, callback) {
+  const req = http.request(options, (res) => {
+    let body = "";
+
+    res.setEncoding('utf8');
+    res.on("data", function(chunk){
+      body += chunk;
+    });
+    res.on('end', () => {
+      var reg = /[0-9a-zA-Z\u4e00-\u9fa5]/g;
+      var names = body.match(reg);
+      var characters = names.join('');
+      console.log(names.join(''));
+      
+      var fontmin = new Fontmin()
+          .src('static/xiaoji/fonts/PingFang-Regular.ttf')
+          .dest('static/xiaoji/fonts/' + fontcachecode)
+          .use(Fontmin.glyph({ 
+              text: characters,
+              hinting: false         // keep ttf hint info (fpgm, prep, cvt). default = true
+          }));
+      
+      fontmin.run(function (err, files) {
+          if (err) {
+              if (callback && callback !== undefined) {
+                callback.error();
+              }
+              throw err;
+          }
+
+          if (callback && callback !== undefined) {
+            callback.success();
+          }
+          console.log(files[0]);
+          // => { contents: <Buffer 00 01 00 ...> }
+      });
+
+    });
+  });
+    
+  req.on('error', (e) => {
+    console.error(`problem with request: ${e.message}`);
+  });
+
+  req.on('response', () => {
+    console.log(`reponsed with request: ${options.path}`);
+  });
+
+  req.end();
+}
 
 function index(ctx) {
   ctx.response.writeHead(200, {'Content-Type': 'text/plain'});
@@ -38,49 +125,8 @@ function minfonts(ctx) {
   let originurl = url.parse(ctx.request.url);
   let fontcachecode = URLSafeBase64.encode(new Buffer(uri));
   
-  const req = http.request({host: 'www.guobaa.com', path: uri, protocol: originurl.protocol, method: ctx.request.method}, (res) => {
-    let body = "";
-  console.log(`STATUS: ${res.statusCode}`);
-  console.log(`HEADERS: ${JSON.stringify(res.headers)}`);
-      res.setEncoding('utf8');
-      res.on("data", function(chunk){
-        body += chunk;
-      });
-      res.on('end', () => {
-        var reg = /[\u4e00-\u9fa5]/g;
-        var names = body.match(reg);
-        var characters = names.join('');
-        console.log(names.join(''));
-        
-        var fontmin = new Fontmin()
-            .src('static/xiaoji/fonts/PingFang-Regular.ttf')
-            .dest('static/xiaoji/fonts/' + fontcachecode)
-            .use(Fontmin.glyph({ 
-                text: characters,
-                hinting: false         // keep ttf hint info (fpgm, prep, cvt). default = true
-            }));
-        
-        fontmin.run(function (err, files) {
-            if (err) {
-                throw err;
-            }
+  buildfont(fontcachecode, {host: 'www.guobaa.com', path: uri, protocol: originurl.protocol, method: ctx.request.method});
 
-            console.log(files[0]);
-            // => { contents: <Buffer 00 01 00 ...> }
-        });
-
-      });
-  });
-  
-  req.on('error', (e) => {
-    console.error(`problem with request: ${e.message}`);
-  });
-
-  req.on('response', () => {
-    console.log(`reponsed with request: ${uri}`);
-  });
-
-  req.end();
   ctx.response.writeHead(200, {'Content-Type': 'application/json'});
   ctx.response.end('{"compressed-fonts":"' + fontcachecode + '"}');
 }
@@ -131,10 +177,7 @@ http.createServer(function(request, response) {
   
   let ctx = {
     request: request,
-    response: response,
-    next: function(ctx) {
-      
-    }
+    response: response
   };
 
   let pathname = url.parse(request.url).pathname;

@@ -9,6 +9,10 @@
   },
   "author": "leon_xi",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/leonxi/mif.git"
+  },
   "dependencies": {
     "fontmin": "^0.9.7-beta",
     "urlsafe-base64": "^1.0.0"
