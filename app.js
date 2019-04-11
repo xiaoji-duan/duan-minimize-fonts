@@ -37,18 +37,18 @@ function statics(ctx) {
               let content = fs.readFileSync(file);
               ctx.response.writeHead(200, {
                 'Content-Type': types.getContentType(filepath),
-                'Access-Control-Allow-Origin','*',
-                'Access-Control-Allow-Methods','DELETE,PUT,POST,GET,OPTIONS',
-                'Access-Control-Allow-Headers','content-type'
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'DELETE,PUT,POST,GET,OPTIONS',
+                'Access-Control-Allow-Headers': 'content-type'
               });
               ctx.response.write(content);
               ctx.response.end();
             },
             error: function() {
               ctx.response.writeHead(404, {'Content-Type': 'text/plain',
-        'Access-Control-Allow-Origin','*',
-        'Access-Control-Allow-Methods','DELETE,PUT,POST,GET,OPTIONS',
-        'Access-Control-Allow-Headers','content-type'});
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'DELETE,PUT,POST,GET,OPTIONS',
+        'Access-Control-Allow-Headers': 'content-type'});
               ctx.response.write('file ' + file + ' not exist.');
               ctx.response.end();
             }
@@ -60,9 +60,9 @@ function statics(ctx) {
       let content = fs.readFileSync(file);
       ctx.response.writeHead(200, {
         'Content-Type': types.getContentType(filepath),
-        'Access-Control-Allow-Origin','*',
-        'Access-Control-Allow-Methods','DELETE,PUT,POST,GET,OPTIONS',
-        'Access-Control-Allow-Headers','content-type'
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'DELETE,PUT,POST,GET,OPTIONS',
+        'Access-Control-Allow-Headers': 'content-type'
       });
       ctx.response.write(content);
       ctx.response.end();
@@ -147,9 +147,9 @@ function minfonts(ctx) {
 
   ctx.response.writeHead(200, {
     'Content-Type': 'application/json',
-    'Access-Control-Allow-Origin','*',
-    'Access-Control-Allow-Methods','DELETE,PUT,POST,GET,OPTIONS',
-    'Access-Control-Allow-Headers','content-type'
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'DELETE,PUT,POST,GET,OPTIONS',
+    'Access-Control-Allow-Headers': 'content-type'
     });
   ctx.response.end('{"compressed-fonts":"' + fontcachecode + '"}');
 }
